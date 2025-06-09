@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>I, Pseudo — Neural Encoding</title>
+<style>
+  body {
+    background: #0a0a1a;
+    color: #0ff;
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  #container {
+    max-width: 600px;
+    width: 100%;
+    background: #11112a;
+    border: 2px solid #0ff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 0 20px #0ffaaaff;
+  }
+  h1 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin-bottom: 0.2rem;
+  }
+  #log {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    background: #000011;
+    padding: 1rem;
+    border-radius: 8px;
+    min-height: 120px;
+    margin-top: 1rem;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  #question {
+    margin-top: 1.5rem;
+    font-weight: 600;
+  }
+  input[type="text"] {
+    background: #000011;
+    border: 1px solid #0ff;
+    color: #0ff;
+    font-family: monospace;
+    padding: 0.5rem;
+    width: 100%;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+  }
+  button {
+    background: #0ff;
+    border: none;
+    color: #000022;
+    font-weight: 700;
+    padding: 0.7rem 1.5rem;
+    margin-top: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: monospace;
+  }
+  button:disabled {
+    background: #055;
+    cursor: not-allowed;
+  }
+  #result {
+    margin-top: 2rem;
+    background: #000011;
+    padding: 1rem;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    font-size: 1rem;
+    box-shadow: 0 0 15px #0ff8;
+  }
+  #shareBox {
+    margin-top: 1rem;
+    width: 100%;
+  }
+  #shareBox textarea {
+    width: 100%;
+    height: 100px;
+    background: #000011;
+    border: 1px solid #0ff;
+    color: #0ff;
+    font-family: monospace;
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <h1>I, Pseudo</h1>
+  <div id="intro">NeuroClone v1.0: Begin Neural Encoding<br><br>Answer the questions to upload your synthetic self.</div>
+
+  <div id="question" style="display:none;"></div>
+  <input type="text" id="answerInput" placeholder="Type your answer..." style="display:none;" autocomplete="off"/>
+  <button id="nextBtn" style="display:none;">Submit</button>
+
+  <div id="log"></div>
+
+  <div id="result" style="display:none;"></div>
+  <div id="shareBox" style="display:none;">
+    <label for="shareText">Share your Synthetic Self:</label>
+    <textarea id="shareText" readonly></textarea>
+  </div>
+</div>
+
+<script>
+  const questions = [
+    "When did you last feel invincible?",
+    "Which shape feels most like home?",
+    "What would your shadow say about you?",
+    "What color do your thoughts wear?",
+    "If your mind had a secret room, what's inside?"
+  ];
+
+  const traits = [
+    "Intuitive", "Resilient", "Mysterious", "Calm", "Fierce", "Dreamer",
+    "Analyzer", "Guardian", "Explorer", "Philosopher"
+  ];
+
+  const quotes = [
+    "“Identity is the echo of our choices in the void.”",
+    "“To build the self is to build the unknown.”",
+    "“Even in simulation, truth finds a way.”",
+    "“The mind’s shadow reveals the light within.”",
+    "“You are both the architect and the artifact.”"
+  ];
+
+  let currentIndex = 0;
+  let userAnswers = [];
+  let generatedTraits = [];
+
+  const introEl = document.getElementById('intro');
+  const questionEl = document.getElementById('question');
+  const answerInput = document.getElementById('answerInput');
+  const nextBtn = document.getElementById('nextBtn');
+  const logEl = document.getElementById('log');
+  const resultEl = document.getElementById('result');
+  const shareBox = document.getElementById('shareBox');
+  const shareText = document.getElementById('shareText');
+
+  function appendLog(text) {
+    logEl.textContent += text + "\n";
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function generateTrait() {
+    // Simple random trait for MVP, could be improved with AI logic later
+    const trait = traits[Math.floor(Math.random() * traits.length)];
+    return trait;
+  }
+
+  function nextStep() {
+    const answer = answerInput.value.trim();
+    if (!answer) return;
+
+    // Log question and answer
+    appendLog(`> ${questions[currentIndex]}`);
+    appendLog(`  ${answer}`);
+
+    userAnswers.push(answer);
+    generatedTraits.push(generateTrait());
+
+    currentIndex++;
+    answerInput.value = "";
+
+    if (currentIndex < questions.length) {
+      questionEl.textContent = questions[currentIndex];
+    } else {
+      finishEncoding();
+    }
+  }
+
+  function finishEncoding() {
+    questionEl.style.display = 'none';
+    answerInput.style.display = 'none';
+    nextBtn.style.display = 'none';
+
+    // Build synthetic avatar summary
+    let summary = `=== Synthetic Avatar Summary ===\n\nTraits detected:\n`;
+    const traitSet = [...new Set(generatedTraits)]; // Unique traits
+    traitSet.forEach(t => summary += `- ${t}\n`);
+
+    // Pick a random quote
+    const quote = quotes[Math.floor(Math.random() * quotes.length)];
+
+    summary += `\nPhilosophical core quote:\n${quote}\n\n`;
+    summary += "NeuroClone v1.0: Upload Complete.\nWelcome to I, Pseudo.\n";
+
+    resultEl.textContent = summary;
+    resultEl.style.display = 'block';
+
+    // Prepare share text
+    shareText.value = summary;
+    shareBox.style.display = 'block';
+
+    appendLog("\n--- Neural Encoding Complete ---");
+  }
+
+  // Start
+  function start() {
+    introEl.style.display = 'none';
+    questionEl.style.display = 'block';
+    answerInput.style.display = 'block';
+    nextBtn.style.display = 'inline-block';
+    questionEl.textContent = questions[currentIndex];
+    answerInput.focus();
+  }
+
+  nextBtn.addEventListener('click', nextStep);
+  answerInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') nextStep();
+  });
+
+  // Auto-start after 2 seconds intro
+  setTimeout(start, 2000);
+
+</script>
+
+</body>
+</html>
