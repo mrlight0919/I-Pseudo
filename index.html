@@ -22,33 +22,32 @@
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 0 12px #5858ffaa;
+    text-align: center;
   }
   h1 {
-    text-align: center;
     margin-bottom: 12px;
-  }
-  .question {
-    margin-bottom: 20px;
   }
   label {
     display: block;
     margin-bottom: 6px;
+    font-size: 1.2em;
   }
   input[type="text"] {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     border-radius: 6px;
     border: none;
     font-size: 1em;
     background: #222244;
     color: #eee;
+    margin-bottom: 20px;
   }
   button {
     background: #5858ff;
     border: none;
     color: white;
     font-weight: bold;
-    padding: 10px 18px;
+    padding: 10px 25px;
     border-radius: 10px;
     cursor: pointer;
     font-size: 1.1em;
@@ -64,7 +63,7 @@
     color: #a0a0ff;
   }
   .spinner {
-    margin: 10px auto;
+    margin: 15px auto;
     width: 50px;
     height: 50px;
     border: 5px solid #5858ff44;
@@ -89,47 +88,10 @@
   <div id="app">
     <h1>NeuroClone v1.0</h1>
     <form id="questionForm">
-      <div class="question">
-        <label for="q1">When did you last feel invincible?</label>
-        <input type="text" id="q1" required />
-      </div>
-      <div class="question">
-        <label for="q2">Which shape feels most like home?</label>
-        <input type="text" id="q2" required />
-      </div>
-      <div class="question">
-        <label for="q3">What would your shadow say about you?</label>
-        <input type="text" id="q3" required />
-      </div>
-      <div class="question">
-        <label for="q4">If your mind were a city, what would it look like?</label>
-        <input type="text" id="q4" required />
-      </div>
-      <div class="question">
-        <label for="q5">Describe your favorite memory in one word.</label>
-        <input type="text" id="q5" required />
-      </div>
-      <div class="question">
-        <label for="q6">What color best represents your mood right now?</label>
-        <input type="text" id="q6" required />
-      </div>
-      <div class="question">
-        <label for="q7">Which animal do you secretly identify with?</label>
-        <input type="text" id="q7" required />
-      </div>
-      <div class="question">
-        <label for="q8">What is the one word your future self would whisper?</label>
-        <input type="text" id="q8" required />
-      </div>
-      <div class="question">
-        <label for="q9">If you could hear your thoughts as music, what genre would they be?</label>
-        <input type="text" id="q9" required />
-      </div>
-      <div class="question">
-        <label for="q10">What do you think your digital clone dreams about?</label>
-        <input type="text" id="q10" required />
-      </div>
-      <button type="submit">Upload Mind</button>
+      <label id="questionLabel" for="answerInput">Loading question...</label>
+      <input type="text" id="answerInput" autocomplete="off" required />
+      <br />
+      <button type="submit">Next</button>
     </form>
 
     <div id="loading">
@@ -141,29 +103,57 @@
   </div>
 
 <script>
+  const questions = [
+    "When did you last feel invincible?",
+    "Which shape feels most like home?",
+    "What would your shadow say about you?",
+    "If your mind were a city, what would it look like?",
+    "Describe your favorite memory in one word.",
+    "What color best represents your mood right now?",
+    "Which animal do you secretly identify with?",
+    "What is the one word your future self would whisper?",
+    "If you could hear your thoughts as music, what genre would they be?",
+    "What do you think your digital clone dreams about?"
+  ];
+
   const form = document.getElementById('questionForm');
+  const questionLabel = document.getElementById('questionLabel');
+  const answerInput = document.getElementById('answerInput');
   const loading = document.getElementById('loading');
   const result = document.getElementById('result');
 
-  // Simple pseudo AI "analysis"
-  function generateSummary(answers) {
+  let currentQuestionIndex = 0;
+  const answers = {};
+
+  function showQuestion(index) {
+    questionLabel.textContent = questions[index];
+    answerInput.value = '';
+    answerInput.focus();
+    if (index === questions.length - 1) {
+      form.querySelector('button').textContent = 'Upload Mind';
+    } else {
+      form.querySelector('button').textContent = 'Next';
+    }
+  }
+
+  function generateSummary(ans) {
     const avatarTraits = [
-      `Curious about ${answers.q2}`,
-      `Feels ${answers.q6}`,
-      `Connects deeply with ${answers.q7}`,
-      `Memories sparkle around "${answers.q5}"`,
-      `Thinks in ${answers.q9} beats`,
-      `Future whispers: "${answers.q8}"`
+      `Curious about ${ans[1]}`,
+      `Feels ${ans[5]}`,
+      `Connects deeply with ${ans[6]}`,
+      `Memories sparkle around "${ans[4]}"`,
+      `Thinks in ${ans[8]} beats`,
+      `Future whispers: "${ans[7]}"`
     ];
     const coreQuote = `"The mind is a labyrinth, but you hold the map."`;
     return `
 ==== NeuroClone v2.0 Boot Complete ====
 
 Personal Log:
-- Invincible moment: ${answers.q1}
-- Mind-city vision: ${answers.q4}
-- Shadow’s secret: ${answers.q3}
-- Digital dreams: ${answers.q10}
+- Invincible moment: ${ans[0]}
+- Mind-city vision: ${ans[3]}
+- Shadow’s secret: ${ans[2]}
+- Digital dreams: ${ans[9]}
 
 Avatar Summary:
 - ${avatarTraits.join('\n- ')}
@@ -177,20 +167,27 @@ WARNING: Emotional parameters exceeded — Proceed with caution.
 
   form.addEventListener('submit', e => {
     e.preventDefault();
-    const formData = new FormData(form);
-    const answers = {};
-    for (let [key, value] of formData.entries()) {
-      answers[key] = value.trim();
+    const answer = answerInput.value.trim();
+    if (!answer) return;
+
+    answers[currentQuestionIndex] = answer;
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < questions.length) {
+      showQuestion(currentQuestionIndex);
+    } else {
+      form.style.display = 'none';
+      loading.style.display = 'block';
+
+      setTimeout(() => {
+        loading.style.display = 'none';
+        result.textContent = generateSummary(answers);
+      }, 3500);
     }
-
-    form.style.display = 'none';
-    loading.style.display = 'block';
-
-    setTimeout(() => {
-      loading.style.display = 'none';
-      result.textContent = generateSummary(answers);
-    }, 3500); // 3.5 seconds loading spinner for intrigue
   });
+
+  // Initialize first question
+  showQuestion(currentQuestionIndex);
 </script>
 </body>
 </html>
